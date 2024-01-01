@@ -1,0 +1,20 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+	"debugger_configurations":
+    [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug Interpreter",
+            "program": "${workspaceFolder}/M65SCRPT.PRG",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+        },
+    ],
+
+}

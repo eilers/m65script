@@ -2,7 +2,7 @@ BUILD_DIR 	= ./
 EXE 		= M65SCRPT.PRG
 
 CC   		= clang #mos-mega65-clang
-CFLAGS 		= -c -Os -std=c89 -o  $(BUILD_DIR)/$@
+CFLAGS 		= -c -Os -g -std=c89 -o  $(BUILD_DIR)/$@
 LDFLAGS   	= -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
 
 OBJS 		= interpreter.o
