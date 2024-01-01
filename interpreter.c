@@ -1306,12 +1306,8 @@ int main(int argc, char **argv)
         --argc;
         ++argv;
     }
-    if (argc < 1) {
-        printf("usage: xc [-s] [-d] file ...\n");
-        return -1;
-    }
 
-    if ((fd = open(*argv, 0)) < 0) {
+    if ((fd = open("EDITOR.PRG", 0)) < 0) {
         printf("could not open(%s)\n", *argv);
         return -1;
     }
