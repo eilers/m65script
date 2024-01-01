@@ -1,5 +1,7 @@
 int test(int foo){
-    printf("Hallo: %d\n", foo);
+    int test;
+    test = 3;
+    printf("Hallo: %d - %d\n", foo, test);
 }
 
 int main(int argc char** argv){
