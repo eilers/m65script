@@ -3,11 +3,11 @@
 #include <memory.h>
 #include <string.h>
 
-#ifdef __M65__
+#ifdef __mos__
+#define read(A,B,C) read512(B)
 #else
 #include <fcntl.h>
 #include <unistd.h>
-#define int long long // to work with 64bit address
 #endif
 
 int debug;    // print the executed instructions
@@ -72,7 +72,7 @@ void next() {
     char *last_pos;
     int hash;
 
-    while (token = *src) {
+    while ((token = *src)) {
         ++src;
 
         if (token == '\n') {
@@ -1287,8 +1287,6 @@ int eval() {
 
 int main(int argc, char **argv)
 {
-    #define int long long // to work with 64bit address
-
     int i, fd;
     int *tmp;
 
@@ -1312,7 +1310,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    poolsize = 256 * 1024; // arbitrary size
+    poolsize = 1 * 512; // arbitrary size
     line = 1;
 
     // allocate memory

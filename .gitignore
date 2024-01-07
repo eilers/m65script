@@ -1,3 +1,4 @@
 *.PRG
 *.o
 *.sublime-workspace
+*.elf
