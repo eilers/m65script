@@ -5,6 +5,7 @@
 
 #ifdef __mos__
 #include "m65scrpt_fileio.h"
+#define BRK() __asm__("brk\nnop\n")
 #define open(A,B) m65scrpt_open(A)
 #define read(A,B,C) m65scrpt_read(B)
 #define close(A) m65scrpt_close(A)
@@ -1311,6 +1312,7 @@ int main(int argc, char **argv)
         ++argv;
     }
 
+    BRK();
     printf("BEFORE OPEN");
     if ((fd = open("EDITOR.PRG", 0)) < 0) {
         printf("could not open(%s)\n", *argv);
