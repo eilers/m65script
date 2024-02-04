@@ -1,30 +1,35 @@
-BUILD_DIR 		= ./
-EXE 			= M65SCRPT.PRG
+BUILD_DIR        = ./
+EXE              = m65scrpt.prg
 
-CC   			= mos-mega65-clang -mcpu=mos45gs02
-CFLAGS 			= -c -Os -g -std=c89 -o $(BUILD_DIR)/$@ -I mega65-libc/include/mega65/
-LDFLAGS   		= -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
+M65-LIB_PATH     = ./mega65-libc/src/llvm
+M65-LIB-INC_PATH = mega65-libc/include/mega65/
 
-OBJS 			= interpreter.o
+CC               = mos-mega65-clang -mcpu=mos45gs02
+CFLAGS           = -c -Os -g -std=c89 -D__mos__ -o $(BUILD_DIR)/$@ -I $(M65-LIB-INC_PATH)
+LDFLAGS          = -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
 
-DISKIMAGE 		= m65script.d81
+OBJS             = interpreter.o
 
-M65-LIB_ASMS 	= fileio.s
+DISKIMAGE        = m65script.d81
+
+ASMS             = m65scrpt_fileio.s
+M65-LIB_ASMS     =
+
 
 .PHONY: all clean run
 
 all: interpreter
 
 run: interpreter
-	../cc1541 -T PRG  -w EDITOR.PRG $(DISKIMAGE)
-	../cc1541 -T PRG  -w M65SCRPT.PRG $(DISKIMAGE)
+	../cc1541 -T PRG  -w editor.prg $(DISKIMAGE)
+	../cc1541 -T PRG  -w m65scrpt.prg $(DISKIMAGE)
 	../xemu/build/bin/xmega65.native -8 $(PWD)/$(DISKIMAGE)  -prg ./$(EXE)
 
 .c.o:
 	$(CC) $(CFLAGS) $<
 
 interpreter: $(OBJS)
-	$(CC) $(LDFLAGS) $(foreach ASM, $(M65-LIB_ASMS), ./mega65-libc/src/llvm/$(ASM))  $(foreach OBJECT, $(OBJS), $(BUILD_DIR)/$(OBJECT))
+	$(CC) $(LDFLAGS) $(foreach LIBASM, $(M65-LIB_ASMS), $(M65-LIB_PATH)/$(LIBASM)) $(foreach ASM, $(ASMS), $(ASM))  $(foreach OBJECT, $(OBJS), $(BUILD_DIR)/$(OBJECT))
 
 clean:
 	rm -rfv $(BUILD_DIR)/$(EXE) $(BUILD_DIR)/*.o

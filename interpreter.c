@@ -4,7 +4,10 @@
 #include <string.h>
 
 #ifdef __mos__
-#define read(A,B,C) read512(B)
+#include "m65scrpt_fileio.h"
+#define open(A,B) m65scrpt_open(A)
+#define read(A,B,C) m65scrpt_read(B)
+#define close(A) m65scrpt_close(A)
 #else
 #include <fcntl.h>
 #include <unistd.h>
@@ -1269,9 +1272,12 @@ int eval() {
         else if (op == MOD) ax = *sp++ % ax;
 
         else if (op == EXIT) { printf("exit(%d)", *sp); return *sp;}
-        else if (op == OPEN) { ax = open((char *)sp[1], sp[0]); }
-        else if (op == CLOS) { ax = close(*sp);}
-        else if (op == READ) { ax = read(sp[2], (char *)sp[1], *sp); }
+        else if (op == OPEN) {
+        	printf("pointer: %x", sp[1]);
+        	ax = m65scrpt_open((char *)sp[1] /*, sp[0] */);
+        }
+        else if (op == CLOS) { ax = m65scrpt_close(*sp);}
+        else if (op == READ) { ax = m65scrpt_read(/*sp[2],*/ (char *)sp[1] /*, *sp */); }
         else if (op == PRTF) { tmp = sp + pc[1]; ax = printf((char *)tmp[-1], tmp[-2], tmp[-3], tmp[-4], tmp[-5], tmp[-6]); }
         else if (op == MALC) { ax = (int)malloc(*sp);}
         else if (op == MSET) { ax = (int)memset((char *)sp[2], sp[1], *sp);}
@@ -1305,10 +1311,12 @@ int main(int argc, char **argv)
         ++argv;
     }
 
+    printf("BEFORE OPEN");
     if ((fd = open("EDITOR.PRG", 0)) < 0) {
         printf("could not open(%s)\n", *argv);
         return -1;
     }
+    printf("Load file: %d", fd);
 
     poolsize = 1 * 512; // arbitrary size
     line = 1;
@@ -1371,6 +1379,8 @@ int main(int argc, char **argv)
     }
     src[i] = 0; // add EOF character
     close(fd);
+
+    printf("File read: %s", src);
 
     program();
 
