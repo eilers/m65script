@@ -11,7 +11,7 @@
 #ifdef __clang__
 __attribute__((leaf))
 #endif
-uint8_t m65scrpt_open(char* filename);
+uint8_t m65scrpt_open(char* filename, uint8_t device);
 
 /**
  * @brief Read up to 512 bytes from file

@@ -5,8 +5,8 @@
 
 #ifdef __mos__
 #include "m65scrpt_fileio.h"
-#define BRK() __asm__("brk\nnop\n")
-#define open(A,B) m65scrpt_open(A)
+#define BRK() __asm__ __volatile__ ("lda #$64\nsta $d030\nbrk\nnop\n")
+#define open(A,B) m65scrpt_open(A,B)
 #define read(A,B,C) m65scrpt_read(B)
 #define close(A) m65scrpt_close(A)
 #else
@@ -1275,7 +1275,7 @@ int eval() {
         else if (op == EXIT) { printf("exit(%d)", *sp); return *sp;}
         else if (op == OPEN) {
         	printf("pointer: %x", sp[1]);
-        	ax = m65scrpt_open((char *)sp[1] /*, sp[0] */);
+        	ax = m65scrpt_open((char *)sp[1], sp[0]);
         }
         else if (op == CLOS) { ax = m65scrpt_close(*sp);}
         else if (op == READ) { ax = m65scrpt_read(/*sp[2],*/ (char *)sp[1] /*, *sp */); }
@@ -1312,32 +1312,33 @@ int main(int argc, char **argv)
         ++argv;
     }
 
-    BRK();
-    printf("BEFORE OPEN");
-    if ((fd = open("EDITOR.PRG", 0)) < 0) {
-        printf("could not open(%s)\n", *argv);
+    char* name = "EDITOR.PRG";
+
+    printf("OPEN FILE: %s\n", name);
+    if ((fd = open(name, 8)) < 0) {
+        printf("COULD NOT OPEN(%s): %x\n", name, fd);
         return -1;
     }
-    printf("Load file: %d", fd);
+    printf("LFN: %x\n", fd);
 
     poolsize = 1 * 512; // arbitrary size
     line = 1;
 
     // allocate memory
     if (!(text = malloc(poolsize))) {
-        printf("could not malloc(%d) for text area\n", poolsize);
+        printf("COULD NOT MALLOC(%d) FOR TEXT AREA\n", poolsize);
         return -1;
     }
     if (!(data = malloc(poolsize))) {
-        printf("could not malloc(%d) for data area\n", poolsize);
+        printf("COULD NOT MALLOC(%d) FOR DATA AREA\n", poolsize);
         return -1;
     }
     if (!(stack = malloc(poolsize))) {
-        printf("could not malloc(%d) for stack area\n", poolsize);
+        printf("COULD NOT MALLOC(%d) FOR STACK AREA\n", poolsize);
         return -1;
     }
     if (!(symbols = malloc(poolsize))) {
-        printf("could not malloc(%d) for symbol table\n", poolsize);
+        printf("COULD NOT MALLOC(%d) FOR SYMBOL TABLE\n", poolsize);
         return -1;
     }
 
@@ -1371,23 +1372,24 @@ int main(int argc, char **argv)
     next(); idmain = current_id; // keep track of main
 
     if (!(src = old_src = malloc(poolsize))) {
-        printf("could not malloc(%d) for source area\n", poolsize);
+        printf("COULD NOT MALLOC(%d) FOR SOURCE AREA\n", poolsize);
         return -1;
     }
     // read the source file
+    printf("DEST: %x\n", src);
     if ((i = read(fd, src, poolsize-1)) <= 0) {
-        printf("read() returned %d\n", i);
+        printf("READ() RETURNED %d\n", i);
         return -1;
     }
     src[i] = 0; // add EOF character
     close(fd);
 
-    printf("File read: %s", src);
+    printf("FILE READ: %s", src);
 
     program();
 
     if (!(pc = (int *)idmain[Value])) {
-        printf("main() not defined\n");
+        printf("MAIN() NOT DEFINED\n");
         return -1;
     }
 
