@@ -3,6 +3,7 @@ SETLFS = $ffba
 SETNAM = $ffbd
 LKUPLA = $ff5f
 LOAD   = $ffd5
+SETBNK = $ff6b
 
 LFN    = $01
 
@@ -12,16 +13,19 @@ LFN    = $01
 ;; char*    filename
 ;; uint8_t  device
 m65scrpt_open:
-    pha         ;; Save device number
+   ;; pha         ;; Save device number
 
-    ;; Activate Kernal ROM
-    lda #$64
+    lda #$00
+    tab
+
+    ;; Activate Kernal and Basic ROM
+    lda #$e4  ;; 1110 0100
     sta $d030
 
     ;; SETLFS
     lda #LFN     ;; Logical File Number
-    plx         ;; Set device number (saved above)
-    ldy #$ff    ;; Secondary Address: no command
+    ldx #$08         ;; Set device number (saved above)
+    ldy #$00    ;; Secondary Address: no command, relocating
     jsr SETLFS
 
     ;; SETNAM
@@ -30,9 +34,27 @@ m65scrpt_open:
     ldy __rc3   ;; >Name
     jsr SETNAM
 
+    ;; SETBNK for load
+    lda #$00    ;; Bank for code
+    tax         ;; Bank for filename
+    jsr SETBNK
+
+    ;; TEST FILE ACCESS
+    ;; LOAD
+    ;clc
+    lda #$00       ;;SET FLAG FOR A LOAD
+    ldx #$69       ;; <Buffer Adress
+    ldy #$6e       ;; >Buffer Address
+    jsr LOAD
+    ;; END TEST
+    brk
+
     ;; Remove Kernal ROM
     lda #$44
     sta $d030
+
+    lda #$00
+    tab
 
     lda #LFN ;; Return LFN
     rts

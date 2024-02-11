@@ -1314,6 +1314,13 @@ int main(int argc, char **argv)
 
     char* name = "EDITOR.PRG";
 
+    if (!(src = old_src = malloc(poolsize))) {
+        printf("COULD NOT MALLOC(%d) FOR SOURCE AREA\n", poolsize);
+        return -1;
+    }
+    // read the source file
+    printf("DEST: %x\n", src);
+
     printf("OPEN FILE: %s\n", name);
     if ((fd = open(name, 8)) < 0) {
         printf("COULD NOT OPEN(%s): %x\n", name, fd);
