@@ -36,9 +36,9 @@ m65script_load:
     jsr SETLFS
 
     ;; SETNAM
-    lda #$0a    ;; TODO: Calculate length of file name
     ldx __rc4   ;; <Name
     ldy __rc5   ;; >Name
+    jsr count_string
     jsr SETNAM
 
     ;; SETBNK for load
@@ -54,8 +54,9 @@ m65script_load:
     ldy __rc3      ;; >Buffer Address
     jsr LOAD
     ;; END TEST
-
-    ;;  todo: handle carry bit on error
+    ;;  todo: handle carry bit on error (set = error)
+    ;;        accu will hold error code
+    ;;         xy : End address
 
     ;; Remove Kernal ROM
     lda #$44
@@ -65,4 +66,30 @@ m65script_load:
     tab
 
     lda #LFN ;; Return LFN
+    rts
+
+
+  ;; counts number of bytes of a zero
+  ;; terminated string
+  ;; ldy: > string_addr
+  ;; ldx: < string_addr
+  ;; returns A : count
+  count_string:
+    lda #$16
+    tab       ;; BP to $1600
+    stx $00   ;; save < addr
+    sty $01   ;; save > addr
+    ldy #$00
+  count_string_loop:
+    lda ($00), y
+    cmp #$00
+    beq count_string_exit
+    iny
+    jmp count_string_loop
+  count_string_exit:
+    lda #$00
+    tab      ;; restore BP
+    tya      ;; return length in A
+    ldx $00  ;; restore < string_addr
+    ldy $01  ;; restore > string_addr
     rts

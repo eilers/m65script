@@ -21,7 +21,7 @@ M65-LIB_ASMS     =
 all: interpreter
 
 run: interpreter
-	../cc1541 -T PRG  -w editor.prg $(DISKIMAGE)
+	../cc1541 -T SEQ  -w editor.m65 $(DISKIMAGE)
 	../cc1541 -T PRG  -w $(EXE) $(DISKIMAGE)
 	../xemu/build/bin/xmega65.native -8 $(PWD)/$(DISKIMAGE)  #-prg ./$(EXE)
 
