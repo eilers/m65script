@@ -82,14 +82,16 @@ m65script_load:
     ldy #$00
   count_string_loop:
     lda ($00), y
-    cmp #$00
+    cmp #$00  ;; check whether string ended
     beq count_string_exit
     iny
     jmp count_string_loop
   count_string_exit:
-    lda #$00
-    tab      ;; restore BP
-    tya      ;; return length in A
+    phy      ;; push count
     ldx $00  ;; restore < string_addr
     ldy $01  ;; restore > string_addr
+    lda #$00
+    tab      ;; restore BP
+    pla      ;; pull count to A
+    clc
     rts
