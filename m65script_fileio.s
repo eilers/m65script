@@ -13,61 +13,69 @@ LFN    = $01
 
 ;; int m65script_load(char* buffer, int size, char* filename, uint8_t device);
 ;;                    rc2 + rc3     A + X     rc4 + rc5,       rc_6
+;; returns 0 or error code on error.
+;; Possible error codes include
+;; 4 (file was not found),
+;; 5 (device was not present),
+;; 8 (no name was specified for a serial load),
+;; 9 (an illegal device number was specified).
 .global m65script_load
 .section .text.m65scrpt_open,"ax",@progbits
-;; Params:
-;; char*    filename
-;; uint8_t  device
 m65script_load:
-    pha         ;; save <size
-    phx         ;; save >size
+    ;; TODO: Find a way to check the buffer size!
+    ;;pha         ;; save <size
+    ;;phx         ;; save >size
+    clc
 
+    ;; always use ZP for kernel calls
     lda #$00
     tab
 
-    ;; Activate Kernal ROM
-    lda #$64  ;; 0110 0100
+    ;; Activate C65 ROM $C000 - $CFFF
+    lda #$64  		;; 0110 0100
     sta $d030
 
+    ;; TODO: LKUPLA and LKUPSA routines can be used to find unused logical file numbers and secondary addresses.
+
     ;; SETLFS
-    lda #LFN    ;; Logical File Number
-    ldx __rc6   ;; Set device number (saved above)
-    ldy #$00    ;; Secondary Address: no command, relocating
+    lda #LFN    	;; Logical File Number
+    ldx __rc6   	;; Set device number (saved above)
+    ldy #$00    	;; Secondary Address: no command, relocating
     jsr SETLFS
 
     ;; SETNAM
-    ldx __rc4   ;; <Name
-    ldy __rc5   ;; >Name
+    ldx __rc4   	;; <Name
+    ldy __rc5   	;; >Name
     jsr count_string
     jsr SETNAM
 
     ;; SETBNK for load
-    lda #$00    ;; Bank for code
-    tax         ;; Bank for filename
+    lda #$00    	;; Bank for code
+    tax         	;; Bank for filename
     jsr SETBNK
 
-    ;; TEST FILE ACCESS
-    ;; LOAD
+    ;; LOAD FILE
     clc
-    lda #$00       ;;SET FLAG FOR A LOAD
-    ldx __rc2      ;; <Buffer Adress
-    ldy __rc3      ;; >Buffer Address
-    jsr LOAD
-    ;; END TEST
-    ;;  todo: handle carry bit on error (set = error)
-    ;;        accu will hold error code
-    ;;         xy : End address
+    lda #$00       	;;SET FLAG FOR A LOAD
+    ldx __rc2      	;; <Buffer Adress
+    ldy __rc3      	;; >Buffer Address
+    jsr LOAD       	;; CLOSE not necessary!
 
-    ;; Remove Kernal ROM
-    lda #$44
+    ;; LOAD returns error code in A when carry flag set.
+
+    pha 			;; save error code for later
+
+    ;; Disable C65 ROM
+    lda #$44  		;; 0100 0100
     sta $d030
 
-    lda #$00
-    tab
+    pla 			;; push error code from stack
+    bcs error_out
 
-    lda #LFN ;; Return LFN
+    lda #$00 		;; clear accu to return 00
     rts
-
+  error_out:
+  	rts				;; Returns the error code in A
 
   ;; counts number of bytes of a zero
   ;; terminated string

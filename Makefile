@@ -1,5 +1,5 @@
 BUILD_DIR        = ./
-EXE              = m65script.prg
+EXE              = m65script
 
 M65-LIB_PATH     = ./mega65-libc/src/llvm
 M65-LIB-INC_PATH = mega65-libc/include/mega65/

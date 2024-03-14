@@ -1366,7 +1366,7 @@ int main(int argc, char **argv)
     // read the source file
     printf("DEST: %x\n", src);
     printf("File: %s", name);
-    if ((i = m65script_load(src, poolsize-1 , name, 8)) <= 0) {
+    if ((i = m65script_load(src, poolsize-1 , name, 8)) != 0) {
         printf("READ() RETURNED %d\n", i);
         return -1;
     }
