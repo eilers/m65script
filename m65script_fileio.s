@@ -11,6 +11,17 @@ SETBNK = $ff6b
 
 LFN    = $01
 
+;; BP Layout
+BP_HIGH = $16  ;; High byte for the BP
+STR_LO  = $00
+STR_HI  = $01
+NUM1_LO = $00
+NUM1_HI = $01
+NUM2_LO = $02
+NUM2_HI = $03
+RES_LO  = $04
+RES_HI  = $05
+
 ;; int m65script_load(char* buffer, int size, char* filename, uint8_t device);
 ;;                    rc2 + rc3     A + X     rc4 + rc5,       rc_6
 ;; returns 0 or error code on error.
@@ -59,9 +70,17 @@ m65script_load:
     lda #$00       	;;SET FLAG FOR A LOAD
     ldx __rc2      	;; <Buffer Adress
     ldy __rc3      	;; >Buffer Address
-    jsr LOAD       	;; CLOSE not necessary!
 
-    ;; LOAD returns error code in A when carry flag set.
+    ;; save buffer for counting later
+    jsr enable_bp
+    stx NUM2_LO
+    sty NUM2_HI
+    jsr disable_bp
+
+    jsr LOAD       	;; CLOSE not necessary! XY = ending address
+
+    ;; LOAD returns error code in A when carry flag set,
+    ;; otherwise X and Y contains end address
 
     pha 			;; save error code for later
 
@@ -69,13 +88,36 @@ m65script_load:
     lda #$44  		;; 0100 0100
     sta $d030
 
-    pla 			;; push error code from stack
+    pla 			;; pull error code from stack
+
     bcs error_out
 
-    lda #$00 		;; clear accu to return 00
+    ;; count bytes read
+    jsr enable_bp
+    stx NUM1_LO
+    sty NUM1_HI
+    jsr subtract_16
+    ldx RES_HI
+    lda RES_LO
+    jsr disable_bp
     rts
   error_out:
+    ldx #$00		;; set high byte to negative
   	rts				;; Returns the error code in A
+
+  enable_bp:
+  	pha
+    lda #BP_HIGH
+    tab       ;; BP to $1600
+    pla
+    rts
+
+  disable_bp:
+  	pha
+  	lda #$00
+  	tab
+  	pla
+  	rts
 
   ;; counts number of bytes of a zero
   ;; terminated string
@@ -83,10 +125,9 @@ m65script_load:
   ;; ldx: < string_addr
   ;; returns A : count
   count_string:
-    lda #$16
-    tab       ;; BP to $1600
-    stx $00   ;; save < addr
-    sty $01   ;; save > addr
+  	jsr enable_bp
+    stx STR_LO   	;; save < addr
+    sty STR_HI   	;; save > addr
     ldy #$00
   count_string_loop:
     lda ($00), y
@@ -95,11 +136,29 @@ m65script_load:
     iny
     jmp count_string_loop
   count_string_exit:
-    phy      ;; push count
-    ldx $00  ;; restore < string_addr
-    ldy $01  ;; restore > string_addr
-    lda #$00
-    tab      ;; restore BP
-    pla      ;; pull count to A
+    phy      		;; push count
+    ldx STR_LO  	;; restore < string_addr
+    ldy STR_HI  	;; restore > string_addr
+    jsr disable_bp
+    pla      		;; pull count to A
     clc
     rts
+
+
+; subtracts number 2 from number 1 and writes result out
+; res = num1 - num2
+  subtract_16:
+  	cld
+	lda NUM1_LO
+  	sec				;; set carry for borrow purpose
+	sbc NUM2_LO		;; perform subtraction on the LSBs
+	sta RES_LO
+	lda NUM1_HI		;; do the same for the MSBs, with carry
+	sbc NUM2_HI		;; set according to the previous result
+	sta RES_HI
+	rts
+
+  break:
+    lda #$64  		;; 0110 0100
+    sta $d030
+    brk

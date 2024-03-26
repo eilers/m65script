@@ -1360,24 +1360,22 @@ int main(int argc, char **argv)
     next(); idmain = current_id; // keep track of main
 
     if (!(src = old_src = malloc(poolsize))) {
-        printf("COULD NOT MALLOC(%d) FOR SOURCE AREA\n", poolsize);
+        printf("could not malloc(%d) for source area\n", poolsize);
         return -1;
     }
     // read the source file
-    printf("DEST: %x\n", src);
-    printf("File: %s", name);
-    if ((i = m65script_load(src, poolsize-1 , name, 8)) != 0) {
-        printf("READ() RETURNED %d\n", i);
+    printf("dest: %x\n", src);
+    if ((i = m65script_load(src, poolsize-1 , name, 8)) < 10) {
+        printf("Error: load() returned %d\n", i);
         return -1;
     }
+    printf("Loaded %d bytes\n", i);
     src[i] = 0; // add EOF character
-
-    printf("FILE READ: %s - %d", src, i);
 
     program();
 
     if (!(pc = (int *)idmain[Value])) {
-        printf("MAIN() NOT DEFINED\n");
+        printf("main() not defined\n");
         return -1;
     }
 
