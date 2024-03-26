@@ -23,9 +23,9 @@ all: interpreter
 
 run: interpreter
 	petcat -w65 -o disk/autoboot.c65 -- disk/autoboot.txt
-	../cc1541 -T PRG  -w disk/$(AUTOBOOT) $(DISKIMAGE)
-	../cc1541 -T SEQ  -w disk/editor.m65 $(DISKIMAGE)
-	../cc1541 -T PRG  -w $(EXE) $(DISKIMAGE)
+	cc1541 -T PRG  -w disk/$(AUTOBOOT) $(DISKIMAGE)
+	cc1541 -T SEQ  -w disk/editor.m65 $(DISKIMAGE)
+	cc1541 -T PRG  -w $(EXE) $(DISKIMAGE)
 	../xemu/build/bin/xmega65.native -8 $(PWD)/$(DISKIMAGE)  #-prg ./$(EXE)
 
 .c.o:
