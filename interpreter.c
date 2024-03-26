@@ -4,11 +4,8 @@
 #include <string.h>
 
 #ifdef __mos__
-#include "m65scrpt_fileio.h"
+#include "m65script_fileio.h"
 #define BRK() __asm__ __volatile__ ("lda #$64\nsta $d030\nbrk\nnop\n")
-#define open(A,B) m65scrpt_open(A,B)
-#define read(A,B,C) m65scrpt_read(B)
-#define close(A) m65scrpt_close(A)
 #else
 #include <fcntl.h>
 #include <unistd.h>
@@ -1274,11 +1271,9 @@ int eval() {
 
         else if (op == EXIT) { printf("exit(%d)", *sp); return *sp;}
         else if (op == OPEN) {
-        	printf("pointer: %x", sp[1]);
-        	ax = m65scrpt_open((char *)sp[1], sp[0]);
         }
-        else if (op == CLOS) { ax = m65scrpt_close(*sp);}
-        else if (op == READ) { ax = m65scrpt_read(/*sp[2],*/ (char *)sp[1] /*, *sp */); }
+        else if (op == CLOS) { }
+        else if (op == READ) { }
         else if (op == PRTF) { tmp = sp + pc[1]; ax = printf((char *)tmp[-1], tmp[-2], tmp[-3], tmp[-4], tmp[-5], tmp[-6]); }
         else if (op == MALC) { ax = (int)malloc(*sp);}
         else if (op == MSET) { ax = (int)memset((char *)sp[2], sp[1], *sp);}
@@ -1312,14 +1307,7 @@ int main(int argc, char **argv)
         ++argv;
     }
 
-    char* name = "EDITOR.PRG";
-
-    printf("OPEN FILE: %s\n", name);
-    if ((fd = open(name, 8)) < 0) {
-        printf("COULD NOT OPEN(%s): %x\n", name, fd);
-        return -1;
-    }
-    printf("LFN: %x\n", fd);
+    char* name = "EDITOR.M65,S,R";
 
     poolsize = 1 * 512; // arbitrary size
     line = 1;
@@ -1372,24 +1360,22 @@ int main(int argc, char **argv)
     next(); idmain = current_id; // keep track of main
 
     if (!(src = old_src = malloc(poolsize))) {
-        printf("COULD NOT MALLOC(%d) FOR SOURCE AREA\n", poolsize);
+        printf("could not malloc(%d) for source area\n", poolsize);
         return -1;
     }
     // read the source file
-    printf("DEST: %x\n", src);
-    if ((i = read(fd, src, poolsize-1)) <= 0) {
-        printf("READ() RETURNED %d\n", i);
+    printf("dest: %x\n", src);
+    if ((i = m65script_load(src, poolsize-1 , name, 8)) < 10) {
+        printf("Error: load() returned %d\n", i);
         return -1;
     }
+    printf("Loaded %d bytes\n", i);
     src[i] = 0; // add EOF character
-    close(fd);
-
-    printf("FILE READ: %s", src);
 
     program();
 
     if (!(pc = (int *)idmain[Value])) {
-        printf("MAIN() NOT DEFINED\n");
+        printf("main() not defined\n");
         return -1;
     }
 
