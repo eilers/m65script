@@ -4,3 +4,4 @@
 *.elf
 m65script.d81
 m65script
+disk/autoboot.c65

@@ -1,5 +1,6 @@
 BUILD_DIR        = ./
 EXE              = m65script
+AUTOBOOT		 = autoboot.c65
 
 M65-LIB_PATH     = ./mega65-libc/src/llvm
 M65-LIB-INC_PATH = mega65-libc/include/mega65/
@@ -21,7 +22,9 @@ M65-LIB_ASMS     =
 all: interpreter
 
 run: interpreter
-	../cc1541 -T SEQ  -w editor.m65 $(DISKIMAGE)
+	petcat -w65 -o disk/autoboot.c65 -- disk/autoboot.txt
+	../cc1541 -T PRG  -w disk/$(AUTOBOOT) $(DISKIMAGE)
+	../cc1541 -T SEQ  -w disk/editor.m65 $(DISKIMAGE)
 	../cc1541 -T PRG  -w $(EXE) $(DISKIMAGE)
 	../xemu/build/bin/xmega65.native -8 $(PWD)/$(DISKIMAGE)  #-prg ./$(EXE)
 
@@ -34,3 +37,4 @@ interpreter: $(OBJS)
 clean:
 	rm -rfv $(BUILD_DIR)/$(EXE) $(BUILD_DIR)/*.o
 	rm m65script.d81
+	rm disk/$(AUTOBOOT)
