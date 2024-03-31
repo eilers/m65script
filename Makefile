@@ -26,7 +26,7 @@ run: interpreter
 	cc1541 -T PRG  -w disk/$(AUTOBOOT) $(DISKIMAGE)
 	cc1541 -T SEQ  -w disk/editor.m65 $(DISKIMAGE)
 	cc1541 -T PRG  -w $(EXE) $(DISKIMAGE)
-	../xemu/build/bin/xmega65.native -8 $(PWD)/$(DISKIMAGE)  #-prg ./$(EXE)
+	xmega65.native -8 $(PWD)/$(DISKIMAGE)  #-prg ./$(EXE)
 
 .c.o:
 	$(CC) $(CFLAGS) $<
@@ -36,5 +36,6 @@ interpreter: $(OBJS)
 
 clean:
 	rm -rfv $(BUILD_DIR)/$(EXE) $(BUILD_DIR)/*.o
-	rm m65script.d81
+	rm -f m65script.d81
+	rm -f m65script.elf
 	rm disk/$(AUTOBOOT)
