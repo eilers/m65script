@@ -2,8 +2,8 @@ BUILD_DIR        = ./
 EXE              = m65script
 AUTOBOOT		 = autoboot.c65
 
-M65-LIB_PATH     = ./mega65-libc/src/llvm
-M65-LIB-INC_PATH = mega65-libc/include/mega65/
+M65-LIB_PATH     = ./m65/mega65-libc/src/llvm
+M65-LIB-INC_PATH = m65/mega65-libc/include/mega65/
 
 CC               = mos-mega65-clang -mcpu=mos45gs02
 CFLAGS           = -c -Os -g -std=c89 -fno-lto -D__mos__ -o $(BUILD_DIR)/$@ -I $(M65-LIB-INC_PATH)
@@ -13,7 +13,7 @@ OBJS             = interpreter.o
 
 DISKIMAGE        = m65script.d81
 
-ASMS             = m65script_fileio.s
+ASMS             = m65/m65script_fileio.s
 M65-LIB_ASMS     =
 
 
