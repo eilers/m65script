@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#ifndef __mos__
+#define uint8_t int
+#endif
+
 /**
  * @brief Load file from disk into buffer
  * @param buffer Input buffer

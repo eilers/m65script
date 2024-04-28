@@ -3,8 +3,8 @@
 #include <memory.h>
 #include <string.h>
 
-#ifdef __mos__
 #include "m65script_fileio.h"
+#ifdef __mos__
 #define BRK() __asm__ __volatile__ ("lda #$64\nsta $d030\nbrk\nnop\n")
 #else
 #include <fcntl.h>
