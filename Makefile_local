@@ -1,0 +1,23 @@
+BUILD_DIR        = ./
+EXE              = m65script
+
+M65-LIB-INC_PATH = unix/
+
+CC               = clang
+CFLAGS           = -c -Os -g -std=c89
+LDFLAGS          = -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
+
+.PHONY: all clean
+
+$(EXE): $(BUILD_DIR)/m65script_fileio.o $(BUILD_DIR)/interpreter.o
+	$(CC) $(LDFLAGS) $(BUILD_DIR)/interpreter.o $(BUILD_DIR)/m65script_fileio.o
+
+interpreter.o: interpreter.c $(BUILD_DIR)/m65script_fileio.o
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/interpreter.o interpreter.c
+
+$(BUILD_DIR)/m65script_fileio.o: unix/m65script_fileio.c
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/m65script_fileio.o unix/m65script_fileio.c
+
+
+clean:
+	rm -rfv $(BUILD_DIR)/$(EXE) $(BUILD_DIR)/*.o

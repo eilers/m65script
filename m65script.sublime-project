@@ -5,16 +5,26 @@
 			"path": "."
 		}
 	],
-	"debugger_configurations":
+    "build_systems": [
+    {
+      "name": "Run Interpreter",
+      "working_dir": "${project_path}/",
+      "shell": true,
+      "cmd": ["make -f Makefile_local"],
+      "file_regex": "(\\S*?):(\\d+):(\\d+): (error.*)",
+      "variants": [
+            ],
+    }
+    ],
+    "debugger_configurations":
     [
         {
             "type": "lldb",
             "request": "launch",
             "name": "Debug Interpreter",
-            "program": "${workspaceFolder}/M65SCRPT.PRG",
+            "program": "${workspaceFolder}/m65script",
             "args": [],
             "cwd": "${workspaceFolder}",
         },
     ],
-
 }
