@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <memory.h>
+#include <mega65/memory.h>
 #include <string.h>
 
 #include "m65script_fileio.h"

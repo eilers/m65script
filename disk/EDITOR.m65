@@ -1,3 +1,4 @@
+////
 int iscntrl(int argument) {
 	if ( (argument < 32) || (argument > 126) ){
 		return 1;
