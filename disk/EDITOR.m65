@@ -3,10 +3,13 @@ int test(int foo){
     int test;
     test = 3;
     printf("Hallo: %d - %d\n", foo, test);
+
+    return 3;
 }
 
-int main(int argc char** argv){
-    test(66);
+int main(int argc, char** argv){
+	int value;
+    value = test(66);
 
-    return 0;
+    return value;
 }
