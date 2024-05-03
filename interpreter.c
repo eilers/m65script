@@ -1,14 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <mega65/memory.h>
 #include <string.h>
 
 #include "m65script_fileio.h"
 #include "m65script_conio.h"
 
 #ifdef __mos__
+#include <mega65/memory.h>
 #define BRK() __asm__ __volatile__ ("lda #$64\nsta $d030\nbrk\nnop\n")
 #else
+#include <memory.h>
 #include <fcntl.h>
 #include <unistd.h>
 #define int long long // to work with 64bit address
