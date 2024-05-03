@@ -1,15 +1,19 @@
-////
-int test(int foo){
-    int test;
-    test = 3;
-    printf("Hallo: %d - %d\n", foo, test);
+int iscntrl(int argument) {
+	if ( (argument < 32) || (argument > 126) ){
+		return 1;
+	}
 
-    return 3;
+	return 0;
 }
 
-int main(int argc, char** argv){
-	int value;
-    value = test(66);
-
-    return value;
+int main(int argc, char** argv) {
+	char c;
+	while (c = cgetc() && c != 'q') {
+		if (iscntrl(c)) {
+			printf("%d\n", c);
+		} else {
+			printf("%d ('%c')\n", c, c);
+		}
+	}
+	return 0;
 }
