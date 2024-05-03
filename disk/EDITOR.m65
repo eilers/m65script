@@ -8,7 +8,10 @@ int iscntrl(int argument) {
 
 int main(int argc, char** argv) {
 	char c;
-	while (c = cgetc() && c != 'q') {
+
+	c = 0;
+	while (c != 'q') {
+		c = cgetc();
 		if (iscntrl(c)) {
 			printf("%d\n", c);
 		} else {
