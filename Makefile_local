@@ -9,10 +9,10 @@ LDFLAGS          = -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
 
 .PHONY: all clean
 
-$(EXE): $(BUILD_DIR)/m65script_fileio.o $(BUILD_DIR)/m65script_conio.o $(BUILD_DIR)/interpreter.o
+$(EXE): $(BUILD_DIR)/interpreter.o
 	$(CC) $(LDFLAGS) $(BUILD_DIR)/interpreter.o $(BUILD_DIR)/m65script_fileio.o $(BUILD_DIR)/m65script_conio.o
 
-interpreter.o: interpreter.c $(BUILD_DIR)/m65script_fileio.o
+interpreter.o: interpreter.c $(BUILD_DIR)/m65script_fileio.o $(BUILD_DIR)/m65script_conio.o
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/interpreter.o interpreter.c
 
 $(BUILD_DIR)/m65script_fileio.o: unix/m65script_fileio.c m65script_fileio.h

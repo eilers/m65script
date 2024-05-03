@@ -1279,7 +1279,7 @@ int eval() {
         else if (op == READ) {
             /*ax = read(sp[2], (char *)sp[1], *sp);*/
         }
-        else if (op == CGETC){ ax = cgetc(); }
+        else if (op == CGETC){ ax = m65script_cgetc(); }
         else if (op == PRTF) { tmp = sp + pc[1]; ax = printf((char *)tmp[-1], tmp[-2], tmp[-3], tmp[-4], tmp[-5], tmp[-6]); }
         else if (op == MALC) { ax = (int)malloc(*sp);}
         else if (op == MSET) { ax = (int)memset((char *)sp[2], sp[1], *sp);}

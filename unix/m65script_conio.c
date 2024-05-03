@@ -23,7 +23,7 @@ void enableRawMode() {
     tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
 }
 
-unsigned char cgetc(void){
+unsigned char m65script_cgetc(void){
     int c;
     enableRawMode();
 
