@@ -1313,6 +1313,9 @@ int main(int argc, char **argv)
     }
 
     char* name = "EDITOR.M65,S,R";
+    if (argc > 0 && **argv == '-' && (*argv)[1] == 'f') {
+        name = *(++argv);
+    }
 
     poolsize = 1 * 512; // arbitrary size
     line = 1;
