@@ -9,6 +9,7 @@
 #else
 #include <fcntl.h>
 #include <unistd.h>
+#define int long long // to work with 64bit address
 #endif
 
 int debug;    // print the executed instructions
@@ -1289,6 +1290,10 @@ int eval() {
 
 int main(int argc, char **argv)
 {
+#ifndef __mos__
+    #define int long long // to work with 64bit address
+#endif
+
     int i, fd;
     int *tmp;
 
