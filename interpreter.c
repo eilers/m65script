@@ -23,7 +23,7 @@ int token; // current token
 // instructions
 enum { LEA ,IMM ,JMP ,CALL,JZ  ,JNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PUSH,
        OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,
-       OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,CGETC };
+       OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,GETKEY };
 
 // tokens and classes (operators last and in precedence order)
 // copied from c4
@@ -89,7 +89,7 @@ void next() {
                 while (old_text < text) {
                     printf("%8.4s", & "LEA ,IMM ,JMP ,CALL,JZ  ,JNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PUSH,"
                                       "OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,"
-                                      "OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,CGET"[*++old_text * 5]);
+                                      "OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,GETK"[*++old_text * 5]);
 
                     if (*old_text <= ADJ)
                         printf(" %d\n", *++old_text);
@@ -1234,7 +1234,7 @@ int eval() {
             printf("%d> %.4s", cycle,
                    & "LEA ,IMM ,JMP ,CALL,JZ  ,JNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PUSH,"
                    "OR  ,XOR ,AND ,EQ  ,NE  ,LT  ,GT  ,LE  ,GE  ,SHL ,SHR ,ADD ,SUB ,MUL ,DIV ,MOD ,"
-                   "OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,CGET"[op * 5]);
+                   "OPEN,READ,CLOS,PRTF,MALC,MSET,MCMP,EXIT,GETK"[op * 5]);
             if (op <= ADJ)
                 printf(" %d\n", *pc);
             else
@@ -1280,7 +1280,7 @@ int eval() {
         else if (op == READ) {
             /*ax = read(sp[2], (char *)sp[1], *sp);*/
         }
-        else if (op == CGETC){ ax = m65script_cgetc(); }
+        else if (op == GETKEY){ ax = m65script_cgetc(); }
         else if (op == PRTF) { tmp = sp + pc[1]; ax = printf((char *)tmp[-1], tmp[-2], tmp[-3], tmp[-4], tmp[-5], tmp[-6]); }
         else if (op == MALC) { ax = (int)malloc(*sp);}
         else if (op == MSET) { ax = (int)memset((char *)sp[2], sp[1], *sp);}
@@ -1356,7 +1356,7 @@ int main(int argc, char **argv)
     old_text = text;
 
     src = "char else enum if int return sizeof while "
-          "open read close printf malloc memset memcmp exit cgetc void main ";
+          "open read close printf malloc memset memcmp exit getkey void main ";
 
      // add keywords to symbol table
     i = Char;

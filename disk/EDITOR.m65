@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
 
 	c = 0;
 	while (c != 'q') {
-		c = cgetc();
+		c = getkey();
 		if (iscntrl(c)) {
 			printf("%d\n", c);
 		} else {
