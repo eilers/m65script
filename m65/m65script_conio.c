@@ -1,7 +1,7 @@
 
 #include "../m65script_conio.h"
-#include "mega65/memory.h"
-#include "mega65/conio.h"
+#include "mega65-libc/include/mega65/conio.h"
+#include "stdio.h"
 
 
 unsigned char m65script_cgetc(void){
