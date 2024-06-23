@@ -13,6 +13,7 @@ LFN    = $01
 
 ;; BP Layout
 BP_HIGH = $16  ;; High byte for the BP
+BP_PTR  = $1600
 STR_LO  = $00
 STR_HI  = $01
 NUM1_LO = $00
@@ -21,6 +22,7 @@ NUM2_LO = $02
 NUM2_HI = $03
 RES_LO  = $04
 RES_HI  = $05
+SAV_D030= $06
 
 ;; int m65script_load(char* buffer, int size, char* filename, uint8_t device);
 ;;                    rc2 + rc3     A + X     rc4 + rc5,       rc_6
@@ -37,6 +39,9 @@ m65script_load:
     ;;pha         ;; save <size
     ;;phx         ;; save >size
     clc
+
+    lda $d030
+    sta BP_PTR + SAV_D030 ;; Absolute call due to BP == 0
 
     ;; always use ZP for kernel calls
     lda #$00
@@ -85,7 +90,7 @@ m65script_load:
     pha 			;; save error code for later
 
     ;; Disable C65 ROM
-    lda #$44  		;; 0100 0100
+    lda BP_PTR + SAV_D030   ;; Restore previously stored $d030
     sta $d030
 
     pla 			;; pull error code from stack
