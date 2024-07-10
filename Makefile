@@ -9,7 +9,7 @@ M65-LIB-INC_PATH = m65/mega65-libc/include/
 CC               = cc6502 --target=mega65
 LN			     = ln6502 --target=mega65
 CFLAGS           = --core=45gs02 -O2 -D__mos__ -I $(M65-LIB-INC_PATH)
-LDFLAGS          = --core=45gs02 mega65-banked.scm --cstack-size=1200  --output-format=prg --list-file=hello-mega65.lst -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
+LDFLAGS          = --core=45gs02 mega65-banked.scm --cstack-size=1200 --heap-size=1800  --output-format=prg --list-file=hello-mega65.lst -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
 
 OBJS             = interpreter.o m65script_conio.o m65script_fileio.o conio.o memory.o
 

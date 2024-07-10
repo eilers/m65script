@@ -1330,7 +1330,7 @@ int main(int argc, char **argv)
     }
 
     #ifdef __mos__
-    poolsize = 1 * 512; // arbitrary size
+    poolsize = 1 * 255; // arbitrary size
     #else
     poolsize = 256 * 1024;; // arbitrary size
     #endif
