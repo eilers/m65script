@@ -7,7 +7,13 @@
 
 #ifdef __mos__
 #include <mega65/memory.h>
-#define BRK() __asm__ __volatile__ ("lda #$64\nsta $d030\nbrk\nnop\n")
+void BRK(){
+    __asm (" lda #0x64\n"
+           " sta 0xd030\n"
+           " brk\n"
+           " nop\n"
+           );
+}
 #else
 #include <memory.h>
 #include <fcntl.h>
@@ -1390,6 +1396,7 @@ int main(int argc, char **argv)
     }
     printf("Loaded %d bytes\n", i);
     src[i] = 0; // add EOF character
+    //BRK();
 
     program();
 
