@@ -6,16 +6,18 @@ M65-LIB_BASE     = ./m65/mega65-libc/src
 M65-LIB_PATH     = $(M65-LIB_BASE)/llvm
 M65-LIB-INC_PATH = m65/mega65-libc/include/
 
-CC               = cc6502 --target=mega65
-LN			     = ln6502 --target=mega65
+CC               = cc6502 --target=MEGA65
+LN			     = ln6502 --target=MEGA65
+LDFLAGS          = --core=45gs02 mega65-banked.scm --verbose --cstack-size=0x800 --heap-size=0x800  --output-format=prg --list-file=m65script.lst -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
 CFLAGS           = --core=45gs02 -O2 -D__mos__ -I $(M65-LIB-INC_PATH)
-LDFLAGS          = --core=45gs02 mega65-banked.scm --cstack-size=1200 --heap-size=1800  --output-format=prg --list-file=hello-mega65.lst -o $(BUILD_DIR)/$(EXE) # "linker flags", yeah
+ASM              = as6502 --target=MEGA65
+ASMFLAGS		 =
 
-OBJS             = interpreter.o m65script_conio.o m65script_fileio.o conio.o memory.o
+OBJS             = interpreter.o m65script_conio.o conio.o memory.o
 
 DISKIMAGE        = m65script.d81
 
-ASMS             =
+ASMS             = m65script_fileio.o
 M65-LIB_ASMS     =
 
 
@@ -34,11 +36,11 @@ run: interpreter
 .c.o:
 	$(CC) $(CFLAGS) --list-file=$(@:%.o=%.lst) $<
 
-$(BUILD_DIR)/m65script_conio.o: m65/m65script_conio.c m65/m65script_fileio.c m65script_conio.h $(M65-LIB-INC_PATH)/mega65/conio.h
+$(BUILD_DIR)/m65script_conio.o: m65/m65script_conio.c m65/m65script_fileio.s m65script_conio.h $(M65-LIB-INC_PATH)/mega65/conio.h
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/conio.o --list-file=conio.lst $(M65-LIB_BASE)/conio.c
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/memory.o $(M65-LIB_BASE)/memory.c
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/m65script_conio.o --list-file=m65script_conio.lst m65/m65script_conio.c
-	$(CC) $(CFLAGS) -o $(BUILD_DIR)/m65script_fileio.o --list-file=m65script_fileio.lst m65/m65script_fileio.c
+	$(ASM) $(ASMFLAGS) -o $(BUILD_DIR)/m65script_fileio.o --list-file=m65script_fileio.lst m65/m65script_fileio.s
 
 interpreter: $(OBJS)
 	$(LN) $(LDFLAGS) $(foreach LIBASM, $(M65-LIB_ASMS), $(M65-LIB_PATH)/$(LIBASM)) $(foreach ASM, $(ASMS), $(ASM))  $(foreach OBJECT, $(OBJS), $(BUILD_DIR)/$(OBJECT))

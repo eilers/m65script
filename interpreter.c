@@ -1337,6 +1337,8 @@ int main(int argc, char **argv)
     line = 1;
 
     // allocate memory
+    //__attribute__((far)) char mybuffer[0x1600];
+
     if (!(text = malloc(poolsize))) {
         printf("COULD NOT MALLOC(%d) FOR TEXT AREA\n", poolsize);
         return -1;
