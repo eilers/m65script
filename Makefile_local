@@ -1,3 +1,5 @@
+# Use: make -f Makefile_local
+# then run m65script
 BUILD_DIR        = ./
 EXE              = m65script
 
