@@ -41,33 +41,20 @@
 ;  #include "../m65script_fileio.h"
 ;
 ;
-;  int m65script_load(char* buffer, int size ,         char* filename,   uint8_t device ){
-;;                    _Zp + _Zp+1   _Zp+26 + _Zp+27    _Zp+24 + _Zp+25,  _Zp+28
+;  int m65script_load(char* buffer, int size ,       char* filename,   uint8_t device ){
+;;                    _Zp + _Zp+1   _Zp+2 + _Zp+3    _Zp+4 + _Zp+5,    _Zp+6
 ;;
+            .section code,text
+            .public m65script_load
+            .extern _Zp
+
 ;; returns 0 or error code on error.
 ;; Possible error codes include
 ;; 4 (file was not found),
 ;; 5 (device was not present),
 ;; 8 (no name was specified for a serial load),
 ;; 9 (an illegal device number was specified).
-
-            .section code,text
-            .public m65script_load
 m65script_load:
-            ldx     #0
-            ldy     #4
-            jsr     _AllocStackSave
-            sta     zp:_Zp+28
-            lda     zp:_Zp+2
-            sta     zp:_Zp+26
-            lda     zp:_Zp+3
-            sta     zp:_Zp+27
-            lda     zp:_Zp+4
-            sta     zp:_Zp+24
-            lda     zp:_Zp+5
-            sta     zp:_Zp+25
-
-
             ;; TODO: Find a way to check the buffer size!
             ;;pha         ;; save <size
             ;;phx         ;; save >size
@@ -88,13 +75,14 @@ m65script_load:
 
             ;; SETLFS
             lda #LFN        ;; Logical File Number
-            ldx zp:_Zp+28   ;; Set device number (saved above)
+            ldx zp:_Zp+6   ;; Set device number (saved above)
             ldy #0x00       ;; Secondary Address: no command, relocating
             jsr SETLFS
 
+
             ;; SETNAM
-            ldx zp:_Zp+24   ;; <Name
-            ldy zp:_Zp+25   ;; >Name
+            ldx zp:_Zp+4   ;; <Name
+            ldy zp:_Zp+5   ;; >Name
             jsr count_string
             jsr SETNAM
 
@@ -135,16 +123,16 @@ m65script_load:
             stx zp:NUM1_LO
             sty zp:NUM1_HI
             jsr subtract_16
-            lda zp:RES_HI
-            sta zp:_Zp
-            lda zp:RES_LO
-            sta zp:_Zp+1
             jsr disable_bp
-            ldy     #4
-            jmp     _RestoreRegisters
+            lda BP_PTR + RES_LO
+            sta zp:_Zp
+            lda BP_PTR + RES_HI
+            sta zp:_Zp+1
             rts
         error_out:
-            ldx #0x00       ;; set high byte to negative
+            sta zp:_Zp      ;; set low byte to error code
+            ldx #0x00       ;; set high byte to zero
+            stx zp:_Zp+1
             rts             ;; Returns the error code in A
 
         enable_bp:
