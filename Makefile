@@ -13,7 +13,7 @@ CFLAGS           = --core=45gs02 -O2 -D__mos__ -I $(M65-LIB-INC_PATH)
 ASM              = as6502 --target=MEGA65
 ASMFLAGS		 =
 
-OBJS             = interpreter.o m65script_conio.o conio.o memory.o
+OBJS             = interpreter.o m65script_conio.o conio.o memory.o m65/stdlib_far.o
 
 DISKIMAGE        = m65script.d81
 
@@ -35,14 +35,15 @@ run: interpreter
 
 .c.o:
 	$(CC) $(CFLAGS) --list-file=$(@:%.o=%.lst) $<
+	$(CC) $(CFLAGS) -o $(BUILD_DIR)/stdlib_far.o --list-file=stdlib_far.lst m65/stdlib_far.c
 
-$(BUILD_DIR)/m65script_conio.o: m65/m65script_conio.c m65/m65script_fileio.s m65script_conio.h $(M65-LIB-INC_PATH)/mega65/conio.h
+$(BUILD_DIR)/m65script_conio.o: m65/m65script_conio.c m65script_conio.h $(M65-LIB-INC_PATH)/mega65/conio.h
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/conio.o --list-file=conio.lst $(M65-LIB_BASE)/conio.c
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/memory.o $(M65-LIB_BASE)/memory.c
 	$(CC) $(CFLAGS) -o $(BUILD_DIR)/m65script_conio.o --list-file=m65script_conio.lst m65/m65script_conio.c
-	$(ASM) $(ASMFLAGS) -o $(BUILD_DIR)/m65script_fileio.o --list-file=m65script_fileio.lst m65/m65script_fileio.s
 
 interpreter: $(OBJS)
+	$(ASM) $(ASMFLAGS) -o $(BUILD_DIR)/m65script_fileio.o --list-file=m65script_fileio.lst m65/m65script_fileio.s
 	$(LN) $(LDFLAGS) $(foreach LIBASM, $(M65-LIB_ASMS), $(M65-LIB_PATH)/$(LIBASM)) $(foreach ASM, $(ASMS), $(ASM))  $(foreach OBJECT, $(OBJS), $(BUILD_DIR)/$(OBJECT))
 
 clean:

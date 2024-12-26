@@ -4,6 +4,7 @@
 
 #include "m65script_fileio.h"
 #include "m65script_conio.h"
+#include "stdlib_far.h"
 
 #ifdef __mos__
 #include <mega65/memory.h>
@@ -25,6 +26,13 @@ int debug;    // print the executed instructions
 int assembly; // print out the assembly and source
 
 int token; // current token
+
+#ifdef __mos__
+#define poolsize 1 * 1024
+#else
+#define poolsize 256 * 1024
+#endif
+
 
 // instructions
 enum { LEA ,IMM ,JMP ,CALL,JZ  ,JNZ ,ENT ,ADJ ,LEV ,LI  ,LC  ,SI  ,SC  ,PUSH,
@@ -49,21 +57,26 @@ enum { CHAR, INT, PTR };
 // type of declaration.
 enum {Global, Local};
 
-int *text, // text segment
-    *stack;// stack
-int * old_text; // for dump text segment
-char *data; // data segment
-int *idmain;
+__attribute__((far)) int text_buffer[poolsize];
+__attribute__((far)) char data_buffer[poolsize];
+__attribute__((far)) int stack_buffer[poolsize];
+__attribute__((far)) int symbols_buffer[poolsize];
+__attribute__((far)) char src_buffer[poolsize];
 
-char *src, *old_src;  // pointer to source code string;
+int __far *text, // text segment
+          *stack;// stack
+int __far * old_text; // for dump text segment
+char __far *data; // data segment
+int __far *idmain;
 
-int poolsize; // default size of text/data/stack
+char __far *src, *old_src;  // pointer to source code string;
+
 int *pc, *bp, *sp, ax, cycle; // virtual machine registers
 
-int *current_id, // current parsed ID
-    *symbols,    // symbol table
-    line,        // line number of source code
-    token_val;   // value of current token (mainly for number)
+int __far *current_id, // current parsed ID
+          *symbols;    // symbol table
+int  line,        // line number of source code
+     token_val;   // value of current token (mainly for number)
 
 int basetype;    // the type of a declaration, make it global for convenience
 int expr_type;   // the type of an expression
@@ -80,7 +93,7 @@ int expr_type;   // the type of an expression
 int index_of_bp; // index of bp pointer on stack
 
 void next() {
-    char *last_pos;
+    char __far *last_pos;
     int hash;
 
     while ((token = *src)) {
@@ -125,7 +138,7 @@ void next() {
             // look for existing identifier, linear search
             current_id = symbols;
             while (current_id[Token]) {
-                if (current_id[Hash] == hash && !memcmp((char *)current_id[Name], last_pos, src - last_pos)) {
+                if (current_id[Hash] == hash && !memcmp_far((char __far*)current_id[Name], last_pos, src - last_pos)) {
                     //found one, return
                     token = current_id[Token];
                     return;
@@ -345,9 +358,9 @@ void expression(int level) {
     // 2. expr ::= unit_unary (bin_op unit_unary ...)
 
     // unit_unary()
-    int *id;
+    int __far *id;
     int tmp;
-    int *addr;
+    int __far *addr;
     {
         if (!token) {
             printf("%d: unexpected token EOF of expression\n", line);
@@ -377,7 +390,7 @@ void expression(int level) {
 
             // append the end of string character '\0', all the data are default
             // to 0, so just move data one position forward.
-            data = (char *)(((int)data + sizeof(int)) & (-sizeof(int)));
+            data = (char __far*)(((int)data + sizeof(int)) & (-sizeof(int)));
             expr_type = PTR;
         }
         else if (token == Sizeof) {
@@ -889,7 +902,7 @@ void statement() {
     // 5. <empty statement>;
     // 6. expression; (expression end with semicolon)
 
-    int *a, *b; // bess for branch control
+    int __far *a, *b; // bess for branch control
 
     if (token == If) {
         // if (...) <statement> [else <statement>]
@@ -1329,16 +1342,10 @@ int main(int argc, char **argv)
         name = *(++argv);
     }
 
-    #ifdef __mos__
-    poolsize = 1 * 255; // arbitrary size
-    #else
-    poolsize = 256 * 1024;; // arbitrary size
-    #endif
     line = 1;
 
     // allocate memory
-    //__attribute__((far)) char mybuffer[0x1600];
-
+#ifndef __mos__
     if (!(text = malloc(poolsize))) {
         printf("COULD NOT MALLOC(%d) FOR TEXT AREA\n", poolsize);
         return -1;
@@ -1355,16 +1362,30 @@ int main(int argc, char **argv)
         printf("COULD NOT MALLOC(%d) FOR SYMBOL TABLE\n", poolsize);
         return -1;
     }
+    if (!(src = old_src = malloc(poolsize))) {
+        printf("could not malloc(%d) for source area\n", poolsize);
+        return -1;
+    }
+#else
+    text            = text_buffer;
+    data            = data_buffer;
+    stack           = stack_buffer;
+    symbols         = symbols_buffer;
+    if (!(src = old_src = (char __far*) malloc(poolsize))) {
+        printf("could not malloc(%d) for source area\n", poolsize);
+        return -1;
+    }
+#endif
 
-    memset(text, 0, poolsize);
-    memset(data, 0, poolsize);
-    memset(stack, 0, poolsize);
-    memset(symbols, 0, poolsize);
+    memset_far(text, 0, poolsize);
+    memset_far(data, 0, poolsize);
+    memset_far(stack, 0, poolsize);
+    memset_far(symbols, 0, poolsize);
 
     old_text = text;
 
-    src = "char else enum if int return sizeof while "
-          "open read close printf malloc memset memcmp exit getkey void main ";
+    src = (char __far *)"char else enum if int return sizeof while "
+                        "open read close printf malloc memset memcmp exit getkey void main ";
 
      // add keywords to symbol table
     i = Char;
@@ -1386,19 +1407,14 @@ int main(int argc, char **argv)
     next(); current_id[Token] = Char; // handle void type
     next(); idmain = current_id; // keep track of main
 
-    if (!(src = old_src = malloc(poolsize))) {
-        printf("could not malloc(%d) for source area\n", poolsize);
-        return -1;
-    }
     // read the source file
     printf("dest: %x\n", src);
-    if ((i = m65script_load(src, poolsize-1 , name, 8)) < 10) {
+    if ((i = m65script_load((char *)src, poolsize-1 , name, 8)) < 10) {
         printf("Error: load() returned %d\n", i);
         return -1;
     }
     printf("Loaded %d bytes\n", i);
     src[i] = 0; // add EOF character
-    //BRK();
 
     program();
 
